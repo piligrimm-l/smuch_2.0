@@ -1,15 +1,16 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <cstdint>
 
 class FixedPoint {
 private:
-  int16_t m_integer = 0;
-  int8_t m_fracttional = 0;
+  std::int16_t m_integer = 0;
+  std::int8_t m_fracttional = 0;
   int m_sign;
 
 public:
-  explicit FixedPoint(int16_t integer = 0, int8_t fracttional = 0) noexcept {
+  explicit FixedPoint(std::int16_t integer = 0, std::int8_t fracttional = 0) noexcept {
     m_sign = ((integer >= 0) && (fracttional >= 0)) ? 1 : -1;
     m_integer = std::abs(integer);
     m_fracttional = std::abs(fracttional);
@@ -18,8 +19,8 @@ public:
   explicit FixedPoint(double dnum) noexcept {
     m_sign = dnum < 0 ? -1 : 1;
     dnum = std::fabs(dnum);
-    m_integer = static_cast<int16_t>(dnum);
-    m_fracttional = static_cast<int8_t>(std::round((dnum - m_integer) * 100)); 
+    m_integer = static_cast<std::int16_t>(dnum);
+    m_fracttional = static_cast<std::int8_t>(std::round((dnum - m_integer) * 100)); 
   }
 
   FixedPoint(const FixedPoint &fp) {
@@ -31,6 +32,7 @@ public:
   operator double();
   bool operator== (const FixedPoint &fp1);
   FixedPoint& operator- ();
+  FixedPoint& operator= (const FixedPoint &fp);
   friend FixedPoint operator+ (FixedPoint &fp1, FixedPoint &fp2);
   friend std::istream& operator>> (std::istream& in, FixedPoint &fp);
   friend std::ostream& operator<< (std::ostream& out, const FixedPoint &fp);
@@ -50,16 +52,24 @@ FixedPoint& FixedPoint::operator- () {
   m_sign *= -1; 
   return *this;
 }
+FixedPoint& FixedPoint::operator= (const FixedPoint &fp) {
+  m_sign = fp.m_sign;
+  m_integer = fp.m_integer;
+  m_fracttional = fp.m_fracttional;
+  return *this;
+}
 
 FixedPoint operator+ (FixedPoint &fp1, FixedPoint &fp2) {
   return FixedPoint(static_cast<double>(fp1) + static_cast<double>(fp2));
 }
 
 std::istream& operator>> (std::istream& in, FixedPoint &fp) {
-  std::cin >> 
-  in >> fp.m_sign;
-  in >> fp.m_integer;
-  in >> fp.m_fracttional;
+  double dnum;
+  in >> dnum;
+  fp = FixedPoint(dnum);
+  //in >> fp.m_sign;
+  //in >> fp.m_integer;
+  //in >> fp.m_fracttional;
   return in;
 }
 
@@ -68,7 +78,7 @@ std::ostream& operator<< (std::ostream& out, const FixedPoint &fp) {
     out << '-';
   }
   out << fp.m_integer << "." << std::setfill('0') <<
-      std::setw(2) << static_cast<int16_t>(fp.m_fracttional % 100);
+      std::setw(2) << static_cast<std::int16_t>(fp.m_fracttional % 100);
   return out;
 }
 
